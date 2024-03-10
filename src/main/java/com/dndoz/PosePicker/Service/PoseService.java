@@ -61,12 +61,12 @@ public class PoseService {
 	private String bucketName;
 
 	public PoseService(AmazonS3 amazonS3,
-		final UserRepository userRepository,
-	final PoseInfoRepository poseInfoRepository,
-		final PoseTalkRepository poseTalkRepository,
-		final PoseFilterRepository poseFilterRepository,
-		final PoseTagAttributeRepository poseTagAttributeRepository,
-		final JwtTokenProvider jwtTokenProvider, final BookmarkRepository bookmarkRepository) {
+					   final UserRepository userRepository,
+					   final PoseInfoRepository poseInfoRepository,
+					   final PoseTalkRepository poseTalkRepository,
+					   final PoseFilterRepository poseFilterRepository,
+					   final PoseTagAttributeRepository poseTagAttributeRepository,
+					   final JwtTokenProvider jwtTokenProvider, final BookmarkRepository bookmarkRepository) {
 		this.amazonS3 = amazonS3;
 		this.userRepository = userRepository;
 		this.poseInfoRepository = poseInfoRepository;
@@ -93,7 +93,7 @@ public class PoseService {
 		return new PoseInfoResponse(urlPrefix, poseInfo);
 	}
 
-	public String uploadPose(String accessToken, PoseUploadRequest poseDto, MultipartFile multipartFile) throws
+	public PoseInfoResponse uploadPose(String accessToken, PoseUploadRequest poseDto, MultipartFile multipartFile) throws
 		IOException, IllegalAccessException {
 		System.out.println(accessToken);
 		String token = jwtTokenProvider.extractJwtToken(accessToken);
@@ -117,9 +117,11 @@ public class PoseService {
 
 			System.out.println(uploadFileName);
 			amazonS3.putObject(bucketName, uploadFileName, multipartFile.getInputStream(), metadata);
-			return amazonS3.getUrl(bucketName, uploadFileName).toString();
+
+			PoseInfo poseInfo = poseInfoRepository.findLastPose().orElseThrow(NullPointerException::new);
+			return new PoseInfoResponse(poseInfo);
 		} else
-			return "null";
+			return null;
 	}
 
 	//포즈픽(사진) 조회
@@ -162,7 +164,7 @@ public class PoseService {
 
 	@Transactional(readOnly = true)
 	public Slice<PoseInfoResponse> findPoses(String accessToken, final Integer pageNumber,
-		final Integer pageSize) throws IllegalAccessException {
+											 final Integer pageSize) throws IllegalAccessException {
 		Pageable pageable = PageRequest.of(pageNumber, pageSize);
 
 		if (null != accessToken) {

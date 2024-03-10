@@ -78,7 +78,7 @@ public class PoseController {
 	@ApiResponse(code = 201, message = "포즈 데이터 업로드 완료")
 	@ApiOperation(value = "포즈 데이터 업로드", notes = "포즈 사진 업로드")
 	@PostMapping("/")
-	public ResponseEntity<?> uploadData(
+	public ResponseEntity<PoseInfoResponse> uploadData(
 		@RequestHeader(value= "Authorization", required=false) String accessToken,
 		@RequestPart(value = "peopleCount") String peopleCount,
 		@RequestPart(value = "frameCount") String frameCount,
@@ -89,8 +89,7 @@ public class PoseController {
 		@RequestPart(value = "file") MultipartFile multipartFile) throws IOException, IllegalAccessException {
 		PoseUploadRequest poseUploadRequest = new PoseUploadRequest(peopleCount, frameCount, tags, source, sourceUrl,
 			description);
-		poseService.uploadPose(accessToken, poseUploadRequest, multipartFile);
-		return ResponseEntity.status(HttpStatus.CREATED).build();
+		return ResponseEntity.ok(poseService.uploadPose(accessToken, poseUploadRequest, multipartFile));
 	}
 
 	/**
