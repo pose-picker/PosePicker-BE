@@ -171,5 +171,15 @@ public class PoseController {
 		return ResponseEntity.ok(
 			poseService.getPoseFeed(accessToken, new PoseFeedRequest(pageNumber, peopleCount, frameCount, tags)));
 	}
+
+	@GetMapping("/user")
+	@ApiOperation(value = "사용자 업로드한 포즈 이미지 조회", notes = "사용자가 업로드한 모든 포즈 이미지를 페이징하여 반환합니다.")
+	public ResponseEntity<?> getUserPoses(
+		@RequestHeader(value = "Authorization", required = false) String accessToken,
+		@RequestParam final Integer pageNumber, @RequestParam final Integer pageSize) throws IllegalAccessException {
+		logger.info("[getUserPoses] 사용자가 업로드한 포즈 이미지 조회 요청");
+		Slice<PoseInfoResponse> poses = poseService.findUserUploadedPoses(accessToken, pageNumber, pageSize);
+		return ResponseEntity.ok(poses);
+	}
 }
 

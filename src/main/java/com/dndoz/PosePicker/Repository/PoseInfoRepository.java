@@ -86,4 +86,8 @@ public interface PoseInfoRepository extends JpaRepository<PoseInfo, Long> {
 			+ "GROUP BY p.pose_id " + "ORDER BY b.updated_at DESC ", nativeQuery = true)
 	Slice<PoseInfo> findBookmark(@Param("uid") Long uid, Pageable pageable);
 
+	@Query(value =
+		"SELECT p.* FROM pose_info p WHERE p.uid = :uid", nativeQuery = true)
+	Slice<PoseInfo> findByUId(@Param("uid") Long uid, Pageable pageable);
+
 }

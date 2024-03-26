@@ -282,4 +282,20 @@ public class PoseService {
 
 	}
 
+	@Transactional(readOnly = true)
+	public Slice<PoseInfoResponse> findUserUploadedPoses(String accessToken, final Integer pageNumber, final Integer pageSize) throws IllegalAccessException {
+		Pageable pageable = PageRequest.of(pageNumber, pageSize);
+
+		if (null != accessToken) {
+			String token = jwtTokenProvider.extractJwtToken(accessToken);
+			if (!jwtTokenProvider.validateToken(token)) {
+				return null;
+			}
+			Long uid = Long.valueOf(jwtTokenProvider.extractUid(token));
+			return poseInfoRepository.findByUId(uid, pageable).map(poseInfo -> new PoseInfoResponse(urlPrefix, poseInfo));
+		}
+
+		return null;
+	}
+
 }
