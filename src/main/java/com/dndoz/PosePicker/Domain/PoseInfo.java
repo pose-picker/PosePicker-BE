@@ -41,7 +41,7 @@ public class PoseInfo extends BaseEntity {
 	@Column(name = "frame_count")
 	private Long frameCount;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "uid")
 	private User user;
 
