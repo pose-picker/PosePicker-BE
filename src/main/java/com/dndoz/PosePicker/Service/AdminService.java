@@ -89,13 +89,12 @@ public class AdminService {
 				String[] tagsArray = poseDto.getTags().split(",");
 
 				for (String tag : tagsArray) {
-					PoseTagAttribute tagAttribute = poseTagAttributeRepository.findByPoseTagAttribute(tag);
-
-					if (tagAttribute == null) {
-						tagAttribute = new PoseTagAttribute();
-						tagAttribute.setAttribute(tag);
-						tagAttribute = poseTagAttributeRepository.save(tagAttribute);
-					}
+					Optional<PoseTagAttribute> tagAttributeOptional = poseTagAttributeRepository.findByPoseTagAttribute(tag);
+					PoseTagAttribute tagAttribute = tagAttributeOptional.orElseGet(() -> {
+						PoseTagAttribute newTagAttribute = new PoseTagAttribute();
+						newTagAttribute.setAttribute(tag);
+						return poseTagAttributeRepository.save(newTagAttribute);
+					});
 
 					PoseTag poseTag = new PoseTag(tagAttribute, poseInfo);
 					poseTagRepository.save(poseTag);

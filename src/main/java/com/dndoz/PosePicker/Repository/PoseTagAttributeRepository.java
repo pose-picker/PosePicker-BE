@@ -2,6 +2,7 @@ package com.dndoz.PosePicker.Repository;
 
 import java.util.List;
 
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,5 +15,5 @@ public interface PoseTagAttributeRepository extends JpaRepository<PoseTagAttribu
 	List<PoseTagAttribute> findPoseTagAttribute();
 
 	@Query(value = "SELECT * FROM tag_attribute WHERE attribute = :attribute", nativeQuery = true)
-	PoseTagAttribute findByPoseTagAttribute(@Param("attribute") String attribute);
+	Optional<PoseTagAttribute> findByPoseTagAttribute(@Param("attribute") String attribute);
 }

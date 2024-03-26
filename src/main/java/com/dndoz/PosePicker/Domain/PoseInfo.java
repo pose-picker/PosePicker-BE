@@ -2,9 +2,12 @@ package com.dndoz.PosePicker.Domain;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -17,8 +20,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@AllArgsConstructor
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity(name = "pose_info")
 @Table(name = "pose_info")
 @ApiModel(value = "포즈 이미지 모델: PoseInfo")
@@ -40,6 +41,10 @@ public class PoseInfo extends BaseEntity {
 	@Column(name = "frame_count")
 	private Long frameCount;
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "uid")
+	private User user;
+
 	@Transient
 	private String tagAttributes;
 
@@ -54,6 +59,7 @@ public class PoseInfo extends BaseEntity {
 		this.poseId = poseInfo.getPoseId();
 		this.peopleCount = poseInfo.getPeopleCount();
 		this.frameCount = poseInfo.getFrameCount();
+		this.user = poseInfo.getUser();
 		this.tagAttributes = tagAttributes;
 	}
 
@@ -66,8 +72,13 @@ public class PoseInfo extends BaseEntity {
 		this.poseId = poseInfo.getPoseId();
 		this.peopleCount = poseInfo.getPeopleCount();
 		this.frameCount = poseInfo.getFrameCount();
+		this.user = poseInfo.getUser();
 		this.tagAttributes = tagAttributes;
 		this.bookmarkCheck=bookmarkCheck;
+	}
+
+	public PoseInfo() {
+
 	}
 
 	public Long getPoseId() {
@@ -109,5 +120,6 @@ public class PoseInfo extends BaseEntity {
 	public void setBookmarkCheck(boolean bookmarkCheck) {
 		this.bookmarkCheck = bookmarkCheck;
 	}
+
 }
 

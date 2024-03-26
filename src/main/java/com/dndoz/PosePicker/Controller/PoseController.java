@@ -53,7 +53,7 @@ public class PoseController {
 	@ResponseStatus(HttpStatus.OK)
 	@GetMapping("/{pose_id}")
 	@ApiResponses({@ApiResponse(code = 200, message = "포즈 사진 상세 조회 성공"),
-		@ApiResponse(code = 401, message = "접근 권한이 없습니다.")})
+	@ApiResponse(code = 401, message = "접근 권한이 없습니다.")})
 	@ApiOperation(value = "포즈 사진 상세 조회", notes = "사진 클릭 시 포즈 상세 정보")
 	public ResponseEntity<PoseInfoResponse> getPoseInfo(
 		@RequestHeader(value = "Authorization", required = false) String accessToken, @PathVariable Long pose_id) throws
