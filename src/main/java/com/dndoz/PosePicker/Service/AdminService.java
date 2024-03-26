@@ -113,4 +113,8 @@ public class AdminService {
 			.collect(Collectors.toList());
 
 	}
+
+	public void deletePose(Long poseId) {
+		poseInfoRepository.deleteById(poseId);
+	}
 }
