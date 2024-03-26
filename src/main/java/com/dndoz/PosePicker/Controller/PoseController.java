@@ -75,10 +75,10 @@ public class PoseController {
 	 * @throws IOException
 	 */
 	@ResponseStatus(HttpStatus.CREATED)
-	@ApiResponse(code = 201, message = "포즈 데이터 업로드 완료")
+	@ApiResponse(code = 200, response = PoseInfoResponse.class, message = "포즈 데이터 업로드 성공")
 	@ApiOperation(value = "포즈 데이터 업로드", notes = "포즈 사진 업로드")
-	@PostMapping("/")
-	public ResponseEntity<PoseInfoResponse> uploadData(
+	@PostMapping()
+	public ResponseEntity<PoseInfoResponse> uploadPose(
 		@RequestHeader(value= "Authorization", required=false) String accessToken,
 		@RequestPart(value = "peopleCount") String peopleCount,
 		@RequestPart(value = "frameCount") String frameCount,
