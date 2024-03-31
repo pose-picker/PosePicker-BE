@@ -86,7 +86,7 @@
                             <i class="fas fa-list mr-3"></i> 포즈 정보 등록 하기
                         </p>
                         <div class="leading-loose">
-                            <form class="p-10 bg-white rounded shadow-xl" action="/api/admin/pose" method="post" enctype="multipart/form-data" onsubmit="return onFormSubmit()">
+                            <form class="p-10 bg-white rounded shadow-xl" id="myForm" action="/api/admin/pose" method="post" enctype="multipart/form-data">
                                 <div class="">
                                     <label class="block text-sm text-gray-600" for="file">File:</label>
                                     <input class="w-full px-5 py-1 text-gray-700 bg-gray-200 rounded" type="file" name="file" />
@@ -104,7 +104,7 @@
 
                                 <div class="mt-2">
                                     <label class="block text-sm text-gray-600" for="tags">Tags:</label>
-                                    <input class="w-full px-5 py-4 text-gray-700 bg-gray-200 rounded" type="text" name="tags" placeholder="남자_유행_연예인_친구_소품_재미_지석진_김수용"/>
+                                    <input class="w-full px-5 py-4 text-gray-700 bg-gray-200 rounded" type="text" name="tags" placeholder="남자,유행,연예인,친구,소품,재미,지석진,김수용"/>
                                 </div>
 
                                 <div class="mt-2">
@@ -142,10 +142,24 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/js/all.min.js"
         integrity="sha256-KzZiKy0DWYsnwMF+X1DvQngQ2/FxF7MF3Ff72XcpuPs=" crossorigin="anonymous"></script>
     <script>
-        function onFormSubmit() {
-            alert("이미지가 정상적으로 등록되었습니다.");
-            return true;
+        function onFormSubmit(event) {
+            event.preventDefault();
+            const form = document.getElementById("myForm");
+
+            const xhr = new XMLHttpRequest();
+            xhr.open(form.method, form.action, true);
+            xhr.onload = function () {
+                if (xhr.status === 201) {
+                    alert("이미지가 정상적으로 등록되었습니다.");
+                    window.location.href = "/admin/tables";
+                } else {
+                    alert("이미지 등록에 실패했습니다.");
+                }
+            };
+            xhr.send(new FormData(form));
         }
+
+        document.getElementById("myForm").addEventListener("submit", onFormSubmit);
     </script>
 </body>
 

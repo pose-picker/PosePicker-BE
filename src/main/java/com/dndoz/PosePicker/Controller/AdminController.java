@@ -34,6 +34,7 @@ public class AdminController {
 		this.adminService = adminService;
 	}
 
+	// 포즈 등록 API
 	@PostMapping("/pose")
 	public ResponseEntity<?> uploadData(
 		@RequestPart(value = "peopleCount") String peopleCount,

@@ -1,10 +1,14 @@
 package com.dndoz.PosePicker.Service;
 
+import com.dndoz.PosePicker.Domain.User;
+import com.dndoz.PosePicker.Repository.UserRepository;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,16 +32,18 @@ import com.dndoz.PosePicker.Repository.PoseTalkRepository;
 @Service
 public class AdminService {
 	private final AmazonS3 amazonS3;
+	private final UserRepository userRepository;
 	private final PoseInfoRepository poseInfoRepository;
 	private final PoseTalkRepository poseTalkRepository;
 	private final PoseTagAttributeRepository poseTagAttributeRepository;
 	private final PoseTagRepository poseTagRepository;
 	private final PoseFilterRepository poseFilterRepository;
 
-	public AdminService(AmazonS3 amazonS3, final PoseInfoRepository poseInfoRepository, final PoseTalkRepository poseTalkRepository, final PoseTagRepository poseTagRepository,
-		final PoseFilterRepository poseFilterRepository, final PoseTagAttributeRepository poseTagAttributeRepository) {
+	public AdminService(AmazonS3 amazonS3, UserRepository userRepository, final PoseInfoRepository poseInfoRepository, final PoseTalkRepository poseTalkRepository, final PoseTagRepository poseTagRepository,
+                        final PoseFilterRepository poseFilterRepository, final PoseTagAttributeRepository poseTagAttributeRepository) {
 		this.amazonS3 = amazonS3;
-		this.poseInfoRepository = poseInfoRepository;
+        this.userRepository = userRepository;
+        this.poseInfoRepository = poseInfoRepository;
 		this.poseTalkRepository = poseTalkRepository;
 		this.poseTagRepository = poseTagRepository;
 		this.poseFilterRepository = poseFilterRepository;
@@ -46,22 +52,50 @@ public class AdminService {
 	   @Value("${cloud.aws.s3.bucketName}")
 	   private String bucketName;
 
-		public String uploadPose(PoseUploadRequest poseDto, MultipartFile multipartFile) throws IOException {
+		@Transactional
+		public PoseInfoResponse uploadPose(PoseUploadRequest poseDto, MultipartFile multipartFile) throws IOException {
+			Long userId = 0L;
+			User user = userRepository.findById(userId).orElseThrow(NullPointerException::new);
+
 			if (!multipartFile.isEmpty()){
 				ObjectMetadata metadata = new ObjectMetadata();
 				metadata.setContentLength(multipartFile.getSize());
 				metadata.setContentType(multipartFile.getContentType());
 
-				String fileType=(multipartFile.getContentType()).substring(6);  //ex) image/png -> png
+				String imageKey = DigestUtils.sha256Hex(userId + LocalDate.now().toString() + System.currentTimeMillis()) + ".jpg";
+				amazonS3.putObject(bucketName, imageKey, multipartFile.getInputStream(), metadata);
 
-				String uploadFileName = poseDto.getFrameCount()+"[pz]"+poseDto.getFrameCount()+"[pz]"+poseDto.getTags()+"[pz]"
-					+poseDto.getSource()+"[pz]"+poseDto.getSourceUrl()+"[pz]"+poseDto.getDescription()+".jpg";
+				PoseInfo poseInfo = new PoseInfo();
+				String poseIdHash = String.valueOf(userId.hashCode() & Integer.MAX_VALUE); // Create a hash of the userId
+				poseInfo.setPoseId(Long.parseLong(poseIdHash));
+				poseInfo.setFrameCount(Long.parseLong(poseDto.getFrameCount()));
+				poseInfo.setPeopleCount(Long.parseLong(poseDto.getPeopleCount()));
+				poseInfo.setSourceUrl(poseDto.getSourceUrl());
+				poseInfo.setSource(poseDto.getSource());
+				poseInfo.setImageKey(imageKey);
+				poseInfo.setUser(user);
 
-				System.out.println(uploadFileName);
-				amazonS3.putObject(bucketName, uploadFileName, multipartFile.getInputStream(), metadata);
-				return amazonS3.getUrl(bucketName, uploadFileName).toString();
+				PoseInfo savedPoseInfo = poseInfoRepository.save(poseInfo);
+
+				String[] tags = poseDto.getTags().split(",");
+				for (String tag : tags) {
+					PoseTagAttribute poseTagAttribute = poseTagAttributeRepository.findByPoseTagAttribute(tag)
+						.orElseGet(() -> {
+							PoseTagAttribute newPoseTagAttribute = new PoseTagAttribute();
+							newPoseTagAttribute.setAttribute(tag);
+							return poseTagAttributeRepository.save(newPoseTagAttribute);
+						});
+
+					PoseTag poseTag = new PoseTag();
+					poseTag.setPoseInfo(savedPoseInfo);
+					poseTag.setPoseTagAttribute(poseTagAttribute);
+					poseTagRepository.save(poseTag);
+				}
+
+				return new PoseInfoResponse(savedPoseInfo);
+			} else {
+				return null;
 			}
-			else return "null";
 		}
 
 	//포즈픽(사진) 조회

@@ -132,12 +132,37 @@
                         수정하기
                     </button>
                 </div>
-            </form>
+
+
+                    <button id="deleteSelected" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                        선택 항목 삭제
+                    </button>
+                </form>
         </div>
     </div>
 </div>
 
 <script>
+    document.getElementById("deleteSelected").addEventListener("click", function() {
+        const poseId = getParameterByName('poseId');
+
+        fetch(`/api/admin/pose/${poseId}`, {
+            method: 'DELETE',
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.statusText}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Success:', data);
+                window.location.href = '/tables';
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    });
     function getParameterByName(name, url = window.location.href) {
         name = name.replace(/[\[\]]/g, '\\$&');
         const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
