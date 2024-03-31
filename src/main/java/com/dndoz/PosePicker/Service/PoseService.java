@@ -146,7 +146,7 @@ public class PoseService {
 				poseTagRepository.save(poseTag);
 			}
 
-			return new PoseInfoResponse(savedPoseInfo);
+			return new PoseInfoResponse(urlPrefix, new PoseInfo(savedPoseInfo, savedPoseInfo.getTagAttributes()));
 		} else {
 			return null;
 		}
