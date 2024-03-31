@@ -18,6 +18,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -192,8 +193,10 @@ public class PoseService {
 
 	@Transactional(readOnly = true)
 	public Slice<PoseInfoResponse> findPoses(String accessToken, final Integer pageNumber,
-											 final Integer pageSize) throws IllegalAccessException {
-		Pageable pageable = PageRequest.of(pageNumber, pageSize);
+											 final Integer pageSize, final String sort) throws IllegalAccessException {
+		// TODO: Enum 으로 정렬 조건 변경
+		Sort sortOption = sort != null ? Sort.by(sort).descending() : Sort.by("created_at").ascending();
+		Pageable pageable = PageRequest.of(pageNumber, pageSize, sortOption);
 
 		if (null != accessToken) {
 			String token = jwtTokenProvider.extractJwtToken(accessToken);
@@ -203,6 +206,11 @@ public class PoseService {
 			Long userId = Long.valueOf(jwtTokenProvider.extractUid(token));
 			setBookmarkStatusForPoses(userId);
 		}
+
+		System.out.println(
+			"DEBUG: " + pageable.getPageNumber() + ", " + pageable.getPageSize() + ", " + pageable.getSort()
+				.toString());
+		System.out.println(pageable.getSort().toString());
 
 		return poseInfoRepository.findPoses(pageable).map(poseInfo -> new PoseInfoResponse(urlPrefix, poseInfo));
 	}

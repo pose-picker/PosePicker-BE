@@ -150,10 +150,10 @@
             xhr.open(form.method, form.action, true);
             xhr.onload = function () {
                 if (xhr.status === 201) {
-                    alert("이미지가 정상적으로 등록되었습니다.");
+                    alert("포즈가 정상적으로 등록되었습니다.");
                     window.location.href = "/admin/tables";
                 } else {
-                    alert("이미지 등록에 실패했습니다.");
+                    alert("포즈 등록에 실패했습니다.");
                 }
             };
             xhr.send(new FormData(form));

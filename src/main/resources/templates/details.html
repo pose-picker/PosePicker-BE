@@ -50,14 +50,6 @@
         </button>
     </div>
     <nav class="text-white text-base font-semibold pt-3">
-        <!--            <a href="index.html" class="flex items-center text-white opacity-75 hover:opacity-100 py-4 pl-6 nav-item">-->
-        <!--                <i class="fas fa-tachometer-alt mr-3"></i>-->
-        <!--                Dashboard-->
-        <!--            </a>-->
-        <!--            <a href="blank.html" class="flex items-center text-white opacity-75 hover:opacity-100 py-4 pl-6 nav-item">-->
-        <!--                <i class="fas fa-sticky-note mr-3"></i>-->
-        <!--                Blank Page-->
-        <!--            </a>-->
         <a href="tables" class="flex items-center active-nav-link text-white py-4 pl-6 nav-item">
             <i class="fas fa-table mr-3"></i>
             포즈 전체 보기
@@ -66,14 +58,6 @@
             <i class="fas fa-align-left mr-3"></i>
             포즈 등록 하기
         </a>
-        <!--            <a href="tabs.html" class="flex items-center text-white opacity-75 hover:opacity-100 py-4 pl-6 nav-item">-->
-        <!--                <i class="fas fa-tablet-alt mr-3"></i>-->
-        <!--                Tabbed Content-->
-        <!--            </a>-->
-        <!--            <a href="calendar.html" class="flex items-center text-white opacity-75 hover:opacity-100 py-4 pl-6 nav-item">-->
-        <!--                <i class="fas fa-calendar mr-3"></i>-->
-        <!--                Calendar-->
-        <!--            </a>-->
     </nav>
 </aside>
 <div class="relative w-full flex flex-col h-screen overflow-y-hidden">
@@ -127,42 +111,44 @@
                 </div>
 
                 <div class="flex items-center justify-between">
-                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                            type="submit">
-                        수정하기
+                    <button
+                            id="updateBtn"
+                            type="button"
+                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                        수정
+                    </button>
+
+                    <button id="deleteBtn"
+                            type="button"
+                            class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                        삭제
                     </button>
                 </div>
+            </form>
 
-
-                    <button id="deleteSelected" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                        선택 항목 삭제
-                    </button>
-                </form>
         </div>
     </div>
 </div>
 
 <script>
-    document.getElementById("deleteSelected").addEventListener("click", function() {
+    document.getElementById("deleteBtn").addEventListener("click", function () {
         const poseId = getParameterByName('poseId');
 
         fetch(`/api/admin/pose/${poseId}`, {
             method: 'DELETE',
         })
             .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Error: ${response.statusText}`);
-                }
-                return response.json();
+                console.log(response);
             })
-            .then(data => {
-                console.log('Success:', data);
-                window.location.href = '/tables';
+            .then((data) => {
+                alert("포즈가 정상적으로 삭제되었습니다.");
+                return window.location.href = '/admin/tables';
             })
             .catch((error) => {
-                console.error('Error:', error);
+                return alert("포즈 삭제에 실패했습니다.");
             });
     });
+
     function getParameterByName(name, url = window.location.href) {
         name = name.replace(/[\[\]]/g, '\\$&');
         const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
@@ -206,16 +192,15 @@
                 'Content-Type': 'application/json'
             }
         }).then(result => {
-            console.log(result);
+            alert("포즈가 정상적으로 수정되었습니다.");
+            window.location.href = `/admin/details?poseId=${getParameterByName('poseId')}`;
         })
-        .catch(error => {
-            console.error('Error:', error);
-        });
+            .catch(error => {
+                alert("포즈 수정에 실패했습니다.");
+            });
     }
 
-    document.getElementById("poseForm").addEventListener("submit", function (event) {
-        event.preventDefault();
-
+    document.getElementById("updateBtn").addEventListener("click", function () {
         const poseId = getParameterByName('poseId');
         const url = `/api/admin/pose/${poseId}`;
         const data = {};

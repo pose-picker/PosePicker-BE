@@ -141,9 +141,12 @@ public class PoseController {
 	@ApiOperation(value = "포즈 피드", notes = "전체 포즈 피드 정보를 제공합니다.")
 	public ResponseEntity<?> getPoses(
 		@RequestHeader(value = "Authorization", required = false) String accessToken,
-		@RequestParam final Integer pageNumber, @RequestParam final Integer pageSize) throws IllegalAccessException {
-		logger.info("[getPoses] 포즈 태그 속성 정보 요청");
-		Slice<PoseInfoResponse> poses = poseService.findPoses(accessToken, pageNumber, pageSize);
+		@RequestParam final Integer pageNumber,
+		@RequestParam final Integer pageSize,
+		@RequestParam(value="sort", required = false) final String sort
+		) throws IllegalAccessException {
+		logger.info("[getPoses] 전체 포즈 정보 요청");
+		Slice<PoseInfoResponse> poses = poseService.findPoses(accessToken, pageNumber, pageSize, sort);
 		return ResponseEntity.ok(poses);
 	}
 

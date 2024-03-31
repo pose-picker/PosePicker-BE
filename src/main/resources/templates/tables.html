@@ -26,7 +26,7 @@
         <div class="p-6">
             <a href="#" class="text-white text-3xl font-semibold uppercase hover:text-gray-300">Pose Picker Admin</a>
             <button class="w-full bg-white cta-btn font-semibold py-2 mt-5 rounded-br-lg rounded-bl-lg rounded-tr-lg shadow-lg hover:shadow-xl hover:bg-gray-300 flex items-center justify-center">
-                <i class="fas fa-plus mr-3"></i> New Report
+                <i class="fas fa-plus mr-3"></i> <a href="forms">New Report</a>
             </button>
         </div>
         <nav class="text-white text-base font-semibold pt-3">
@@ -106,7 +106,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            fetch('/api/pose/all?pageNumber=0&pageSize=500')
+            fetch('/api/pose/all?pageNumber=0&pageSize=500&sort=created_at')
                 .then(response => response.json())
                 .then(data => {
                     const tableBody = document.getElementById('tableBody');
@@ -126,7 +126,7 @@
                         row.appendChild(imageCell);
 
                         const sourceCell = document.createElement('td');
-                        sourceCell.textContent = item.poseInfo.source || 'N/A'; // Show 'N/A' if source is empty
+                        sourceCell.textContent = item.poseInfo.source || 'N/A';
                         row.appendChild(sourceCell);
 
                         const peopleCountCell = document.createElement('td');
