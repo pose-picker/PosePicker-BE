@@ -29,7 +29,7 @@ public interface PoseInfoRepository extends JpaRepository<PoseInfo, Long> {
 	@Query(value =
 		"SELECT p.*, GROUP_CONCAT(ta.attribute ORDER BY ta.attribute_id ASC) AS tag_attributes FROM pose_info p "
 			+ "JOIN tag t ON p.pose_id = t.pose_id " + "JOIN tag_attribute ta ON t.attribute_id = ta.attribute_id "
-			+ "WHERE (:people_count < 5 AND p.people_count = :people_count) "
+			+ "WHERE (:people_count < 5 AND p.people_count = :people_count) AND show = 0 "
 			+ "OR (:people_count >= 5 AND p.people_count >= 5) " + "GROUP BY p.pose_id "
 			+ "ORDER BY RAND() LIMIT 1", nativeQuery = true)
 	Optional<PoseInfo> findRandomPoseInfo(Long people_count);
@@ -37,6 +37,7 @@ public interface PoseInfoRepository extends JpaRepository<PoseInfo, Long> {
 	@Query(value =
 		"SELECT p.*, GROUP_CONCAT(ta.attribute ORDER BY ta.attribute_id ASC) AS tag_attributes FROM pose_info p "
 			+ "JOIN tag t ON p.pose_id = t.pose_id " + "JOIN tag_attribute ta ON t.attribute_id = ta.attribute_id "
+			+ "WHERE p.show = 0 "
 			+ "GROUP BY p.pose_id ", nativeQuery = true)
 	Slice<PoseInfo> findPoses(Pageable pageable);
 

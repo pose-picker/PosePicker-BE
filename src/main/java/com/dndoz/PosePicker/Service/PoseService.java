@@ -128,6 +128,7 @@ public class PoseService {
 			poseInfo.setSource(poseDto.getSource());
 			poseInfo.setImageKey(imageKey);
 			poseInfo.setUser(user);
+			poseInfo.setShow(false);
 
 			PoseInfo savedPoseInfo = poseInfoRepository.save(poseInfo);
 
@@ -155,7 +156,7 @@ public class PoseService {
 
 	//포즈픽(사진) 조회
 	public PoseInfoResponse showRandomPoseInfo(Long people_count) {
-		PoseInfo poseInfo = poseFilterRepository.findRandomPoseInfo(people_count)
+ 		PoseInfo poseInfo = poseFilterRepository.findRandomPoseInfo(people_count)
 			.orElseThrow(NullPointerException::new);
 		return new PoseInfoResponse(urlPrefix, poseInfo);
 	}
