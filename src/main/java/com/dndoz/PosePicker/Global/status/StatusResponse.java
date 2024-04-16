@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 
 @ApiModel(value = "모델 태그 정보")
 @Getter
-@JsonInclude(JsonInclude.Include.NON_NULL) // Null 값인 필드 제외하고 보내기
+//@JsonInclude(JsonInclude.Include.NON_NULL) // Null 값인 필드 제외하고 보내기
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class StatusResponse {
@@ -31,6 +31,7 @@ public class StatusResponse {
         this.message = code.getMessage();
         this.status = code.getStatus();
         this.entity = res;
+        this.redirect= null;
     }
 
     public StatusResponse(final StatusCode code) {

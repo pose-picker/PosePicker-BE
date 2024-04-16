@@ -52,7 +52,7 @@ public class KakaoService {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final PPJwtTokenProvider psJwTokenProvider;
 	private final RedisTemplate<String, String> redisTemplate;
-	//private final BookmarkRepository bookmarkRepository;
+	private final BookmarkRepository bookmarkRepository;
 	private final WithdrawalRepository withdrawalRepository;
 
 	/** [1] ios 버전 카카오 로그인 **/
