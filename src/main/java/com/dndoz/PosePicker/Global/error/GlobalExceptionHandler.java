@@ -23,6 +23,7 @@ import com.dndoz.PosePicker.Global.error.exception.ErrorCode;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
+import io.sentry.Sentry;
 import lombok.extern.slf4j.Slf4j;
 
 @ControllerAdvice
@@ -32,6 +33,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     protected ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         log.error("handleMethodArgumentNotValidException", e);
+		Sentry.captureException(e); // Sentry에 예외 보내기
         final ErrorResponse response = ErrorResponse.of(ErrorCode.INVALID_INPUT_VALUE, e.getBindingResult());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
@@ -39,6 +41,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BindException.class)
     protected ResponseEntity<ErrorResponse> handleBindException(BindException e) {
         log.error("handleBindException", e);
+		Sentry.captureException(e); // Sentry에 예외 보내기
         final ErrorResponse response = ErrorResponse.of(ErrorCode.INVALID_INPUT_VALUE, e.getBindingResult());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
@@ -46,6 +49,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     protected ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
         log.error("handleMethodArgumentTypeMismatchException", e);
+		Sentry.captureException(e); // Sentry에 예외 보내기
         final ErrorResponse response = ErrorResponse.of(e);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
@@ -53,6 +57,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     protected ResponseEntity<ErrorResponse> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {
         log.error("handleHttpRequestMethodNotSupportedException", e);
+		Sentry.captureException(e); // Sentry에 예외 보내기
         final ErrorResponse response = ErrorResponse.of(ErrorCode.METHOD_NOT_ALLOWED);
         return new ResponseEntity<>(response, HttpStatus.METHOD_NOT_ALLOWED);
     }
@@ -60,6 +65,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)
     protected ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException e) {
         log.error("handleAccessDeniedException", e);
+		Sentry.captureException(e); // Sentry에 예외 보내기
         final ErrorResponse response = ErrorResponse.of(ErrorCode.HANDLE_ACCESS_DENIED);
         return new ResponseEntity<>(response, HttpStatus.valueOf(ErrorCode.HANDLE_ACCESS_DENIED.getStatus()));
     }
@@ -67,6 +73,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     protected ResponseEntity<ErrorResponse> handleBusinessException(final BusinessException e) {
         log.error("handleEntityNotFoundException", e);
+		Sentry.captureException(e); // Sentry에 예외 보내기
         final ErrorCode errorCode = e.getErrorCode();
         final ErrorResponse response = ErrorResponse.of(errorCode);
         return new ResponseEntity<>(response, HttpStatus.valueOf(errorCode.getStatus()));
@@ -75,6 +82,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MissingServletRequestParameterException.class)
     protected ResponseEntity<ErrorResponse> handleException(MissingServletRequestParameterException e) {
         log.error("handleEntityNotFoundException", e);
+		Sentry.captureException(e); // Sentry에 예외 보내기
         final ErrorResponse response = ErrorResponse.of(ErrorCode.BAD_REQUEST);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
@@ -82,6 +90,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NullPointerException.class)
     protected ResponseEntity<ErrorResponse> handleException(NullPointerException e) {
         log.error("NullPointerException", e);
+		Sentry.captureException(e); // Sentry에 예외 보내기
         final ErrorResponse response = ErrorResponse.of(ErrorCode.ENTITY_NOT_FOUND);
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
@@ -89,6 +98,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     protected ResponseEntity<ErrorResponse> handleException(IllegalArgumentException e) {
         log.error("IllegalArgumentException", e);
+		Sentry.captureException(e); // Sentry에 예외 보내기
         final ErrorResponse response = ErrorResponse.of(ErrorCode.UNSUPPORTED_MEDIA_TYPE);
         return new ResponseEntity<>(response, HttpStatus.UNSUPPORTED_MEDIA_TYPE);
     }
@@ -97,7 +107,7 @@ public class GlobalExceptionHandler {
     protected ResponseEntity<ErrorResponse> handleMaxUploadSizeExceededException(
             MaxUploadSizeExceededException e) {
         log.info("handleMaxUploadSizeExceededException", e);
-
+		Sentry.captureException(e); // Sentry에 예외 보내기
         ErrorResponse response = ErrorResponse.of(ErrorCode.FILE_SIZE_EXCEED);
         return new ResponseEntity<>(response, HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE);
     }
@@ -106,7 +116,7 @@ public class GlobalExceptionHandler {
     protected ResponseEntity<ErrorResponse> handleMultipartException(
             MultipartException e) {
         log.info("handleMultipartException", e);
-
+		Sentry.captureException(e); // Sentry에 예외 보내기
         ErrorResponse response = ErrorResponse.of(ErrorCode.EXPECTATION_FAILED);
         return new ResponseEntity<>(response, HttpStatus.EXPECTATION_FAILED);
     }
@@ -114,6 +124,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     protected ResponseEntity<ErrorResponse> handleException(Exception e) {
         log.error("handleEntityNotFoundException", e);
+		Sentry.captureException(e); // Sentry에 예외 보내기
         final ErrorResponse response = ErrorResponse.of(ErrorCode.INTERNAL_SERVER_ERROR);
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -122,6 +133,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(UnsupportedJwtException.class)
 	public ResponseEntity<ErrorResponse> UnsupportedJwtException(Exception e) {
 		e.printStackTrace();
+		Sentry.captureException(e); // Sentry에 예외 보내기
 		final ErrorResponse response = ErrorResponse.of(ErrorCode.UNSUPPORTED_JWT_TOKEN);
 		return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
 	}
@@ -129,6 +141,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(MalformedJwtException.class)
 	public ResponseEntity<ErrorResponse> MalformedJwtException(Exception e) {
 		e.printStackTrace();
+		Sentry.captureException(e); // Sentry에 예외 보내기
 		final ErrorResponse response = ErrorResponse.of(ErrorCode.MALFORMED_JWT_TOKEN);
 		return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
 	}
@@ -136,6 +149,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(ExpiredJwtException.class)
 	public ResponseEntity<ErrorResponse> ExpiredJwtException(Exception e) {
 		e.printStackTrace();
+		Sentry.captureException(e); // Sentry에 예외 보내기
 		final ErrorResponse response = ErrorResponse.of(ErrorCode.EXPIRED_JWT_TOKEN);
 		return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
 	}
@@ -143,6 +157,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(IllegalAccessException.class)
 	public ResponseEntity<ErrorResponse> IllegalAccessException(Exception e) {
 		e.printStackTrace();
+		Sentry.captureException(e); // Sentry에 예외 보내기
 		final ErrorResponse response = ErrorResponse.of(ErrorCode.UNAUTHORIZED_JWT_TOKEN);
 		return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
 	}
@@ -150,13 +165,15 @@ public class GlobalExceptionHandler {
 	//북마크 에러
 	@ExceptionHandler(BookmarkException.class)
 	public ResponseEntity<ErrorResponse> handleBookmarkException(BookmarkException e) {
-		final ErrorResponse response = ErrorResponse.of(ErrorCode.BOOKMARK_BAD_REQUEST);
+		Sentry.captureException(e); // Sentry에 예외 보내기
+    	final ErrorResponse response = ErrorResponse.of(ErrorCode.BOOKMARK_BAD_REQUEST);
 		return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
 	}
 
 	//로그아웃 & 토큰 재발급 시 에러
 	@ExceptionHandler(CustomTokenException.class)
 	public ResponseEntity<ErrorResponse> handleCustomTokenException(CustomTokenException e) {
+		Sentry.captureException(e); // Sentry에 예외 보내기
     	if (e.getMessage().equals("로그아웃 된 토큰 입니다")) {
 			final ErrorResponse response = ErrorResponse.of(ErrorCode.LOGOUT_JWT_TOKEN);
 			return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
