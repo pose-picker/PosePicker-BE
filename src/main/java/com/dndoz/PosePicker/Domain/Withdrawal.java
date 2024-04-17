@@ -2,6 +2,8 @@ package com.dndoz.PosePicker.Domain;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -17,7 +19,8 @@ import lombok.NoArgsConstructor;
 @Table(name = "withdrawal")
 public class Withdrawal extends BaseEntity {
 	@Id
-	@Column(name="withdrawalId")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name="withdrawal_id")
 	private Long withdrawalId;
 
 	@Column(name = "uid")
