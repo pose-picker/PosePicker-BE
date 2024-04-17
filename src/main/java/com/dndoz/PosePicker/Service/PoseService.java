@@ -1,12 +1,16 @@
 package com.dndoz.PosePicker.Service;
 
+import com.dndoz.PosePicker.Domain.PoseTag;
+import com.dndoz.PosePicker.Repository.PoseTagRepository;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,6 +18,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -48,6 +53,7 @@ public class PoseService {
 	private final PoseInfoRepository poseInfoRepository;
 	private final PoseTalkRepository poseTalkRepository;
 	private final PoseFilterRepository poseFilterRepository;
+	private final PoseTagRepository poseTagRepository;
 	private final PoseTagAttributeRepository poseTagAttributeRepository;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final BookmarkRepository bookmarkRepository;
@@ -61,17 +67,19 @@ public class PoseService {
 	private String bucketName;
 
 	public PoseService(AmazonS3 amazonS3,
-		final UserRepository userRepository,
-	final PoseInfoRepository poseInfoRepository,
-		final PoseTalkRepository poseTalkRepository,
-		final PoseFilterRepository poseFilterRepository,
-		final PoseTagAttributeRepository poseTagAttributeRepository,
-		final JwtTokenProvider jwtTokenProvider, final BookmarkRepository bookmarkRepository) {
+					   final UserRepository userRepository,
+					   final PoseInfoRepository poseInfoRepository,
+					   final PoseTalkRepository poseTalkRepository,
+					   final PoseFilterRepository poseFilterRepository,
+					   final PoseTagRepository poseTagRepository,
+					   final PoseTagAttributeRepository poseTagAttributeRepository,
+					   final JwtTokenProvider jwtTokenProvider, final BookmarkRepository bookmarkRepository) {
 		this.amazonS3 = amazonS3;
 		this.userRepository = userRepository;
 		this.poseInfoRepository = poseInfoRepository;
 		this.poseTalkRepository = poseTalkRepository;
 		this.poseFilterRepository = poseFilterRepository;
+		this.poseTagRepository = poseTagRepository;
 		this.poseTagAttributeRepository = poseTagAttributeRepository;
 		this.jwtTokenProvider = jwtTokenProvider;
 		this.bookmarkRepository = bookmarkRepository;
@@ -93,9 +101,9 @@ public class PoseService {
 		return new PoseInfoResponse(urlPrefix, poseInfo);
 	}
 
-	public String uploadPose(String accessToken, PoseUploadRequest poseDto, MultipartFile multipartFile) throws
-		IOException, IllegalAccessException {
-		System.out.println(accessToken);
+	// 포즈 업로드
+	@Transactional
+	public PoseInfoResponse uploadPose(String accessToken, PoseUploadRequest poseDto, MultipartFile multipartFile) throws IOException, IllegalAccessException {
 		String token = jwtTokenProvider.extractJwtToken(accessToken);
 		if (!jwtTokenProvider.validateToken(token)) {
 			return null;
@@ -108,23 +116,47 @@ public class PoseService {
 			metadata.setContentLength(multipartFile.getSize());
 			metadata.setContentType(multipartFile.getContentType());
 
-			String fileType = (multipartFile.getContentType()).substring(6);  //ex) image/png -> png
+			String imageKey = DigestUtils.sha256Hex(userId + LocalDate.now().toString() + System.currentTimeMillis()) + ".jpg";
+			amazonS3.putObject(bucketName, imageKey, multipartFile.getInputStream(), metadata);
 
-			String uploadFileName =
-				poseDto.getFrameCount() + "[pz]" + poseDto.getFrameCount() + "[pz]" + poseDto.getTags() + "[pz]"
-					+ poseDto.getSource() + "[pz]" + poseDto.getSourceUrl() + "[pz]" + poseDto.getDescription()
-					+ ".jpg";
+			PoseInfo poseInfo = new PoseInfo();
+			String poseIdHash = String.valueOf(userId.hashCode() & Integer.MAX_VALUE); // Create a hash of the userId
+			poseInfo.setPoseId(Long.parseLong(poseIdHash));
+			poseInfo.setFrameCount(Long.parseLong(poseDto.getFrameCount()));
+			poseInfo.setPeopleCount(Long.parseLong(poseDto.getPeopleCount()));
+			poseInfo.setSourceUrl(poseDto.getSourceUrl());
+			poseInfo.setSource(poseDto.getSource());
+			poseInfo.setImageKey(imageKey);
+			poseInfo.setUser(user);
+			poseInfo.setShow(false);
 
-			System.out.println(uploadFileName);
-			amazonS3.putObject(bucketName, uploadFileName, multipartFile.getInputStream(), metadata);
-			return amazonS3.getUrl(bucketName, uploadFileName).toString();
-		} else
-			return "null";
+			PoseInfo savedPoseInfo = poseInfoRepository.save(poseInfo);
+
+			String[] tags = poseDto.getTags().split(",");
+			for (String tag : tags) {
+				PoseTagAttribute poseTagAttribute = poseTagAttributeRepository.findByPoseTagAttribute(tag)
+					.orElseGet(() -> {
+						PoseTagAttribute newPoseTagAttribute = new PoseTagAttribute();
+						newPoseTagAttribute.setAttribute(tag);
+						return poseTagAttributeRepository.save(newPoseTagAttribute);
+					});
+
+				PoseTag poseTag = new PoseTag();
+				poseTag.setPoseInfo(savedPoseInfo);
+				poseTag.setPoseTagAttribute(poseTagAttribute);
+				poseTagRepository.save(poseTag);
+			}
+
+			return new PoseInfoResponse(urlPrefix, new PoseInfo(savedPoseInfo, savedPoseInfo.getTagAttributes()));
+		} else {
+			return null;
+		}
 	}
+
 
 	//포즈픽(사진) 조회
 	public PoseInfoResponse showRandomPoseInfo(Long people_count) {
-		PoseInfo poseInfo = poseFilterRepository.findRandomPoseInfo(people_count)
+ 		PoseInfo poseInfo = poseFilterRepository.findRandomPoseInfo(people_count)
 			.orElseThrow(NullPointerException::new);
 		return new PoseInfoResponse(urlPrefix, poseInfo);
 	}
@@ -162,8 +194,10 @@ public class PoseService {
 
 	@Transactional(readOnly = true)
 	public Slice<PoseInfoResponse> findPoses(String accessToken, final Integer pageNumber,
-		final Integer pageSize) throws IllegalAccessException {
-		Pageable pageable = PageRequest.of(pageNumber, pageSize);
+											 final Integer pageSize, final String sort) throws IllegalAccessException {
+		// TODO: Enum 으로 정렬 조건 변경
+		Sort sortOption = sort != null ? Sort.by(sort).descending() : Sort.by("created_at").ascending();
+		Pageable pageable = PageRequest.of(pageNumber, pageSize, sortOption);
 
 		if (null != accessToken) {
 			String token = jwtTokenProvider.extractJwtToken(accessToken);
@@ -173,7 +207,6 @@ public class PoseService {
 			Long userId = Long.valueOf(jwtTokenProvider.extractUid(token));
 			setBookmarkStatusForPoses(userId);
 		}
-
 		return poseInfoRepository.findPoses(pageable).map(poseInfo -> new PoseInfoResponse(urlPrefix, poseInfo));
 	}
 
@@ -250,6 +283,22 @@ public class PoseService {
 
 		return new PoseFeedResponse(filteredContents);
 
+	}
+
+	@Transactional(readOnly = true)
+	public Slice<PoseInfoResponse> findUserUploadedPoses(String accessToken, final Integer pageNumber, final Integer pageSize) throws IllegalAccessException {
+		Pageable pageable = PageRequest.of(pageNumber, pageSize);
+
+		if (null != accessToken) {
+			String token = jwtTokenProvider.extractJwtToken(accessToken);
+			if (!jwtTokenProvider.validateToken(token)) {
+				return null;
+			}
+			Long uid = Long.valueOf(jwtTokenProvider.extractUid(token));
+			return poseInfoRepository.findByUId(uid, pageable).map(poseInfo -> new PoseInfoResponse(urlPrefix, poseInfo));
+		}
+
+		return null;
 	}
 
 }

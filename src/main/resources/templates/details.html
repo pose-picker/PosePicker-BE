@@ -44,21 +44,13 @@
 <body class="bg-gray-100 font-family-karla flex">
 <aside class="relative bg-sidebar h-screen w-64 hidden sm:block shadow-xl">
     <div class="p-6">
-        <a href="#" class="text-white text-3xl font-semibold uppercase hover:text-gray-300">Pose Picker Admin</a>
+        <a href="tables" class="text-white text-3xl font-semibold uppercase hover:text-gray-300">Pose Picker Admin</a>
         <button class="w-full bg-white cta-btn font-semibold py-2 mt-5 rounded-br-lg rounded-bl-lg rounded-tr-lg shadow-lg hover:shadow-xl hover:bg-gray-300 flex items-center justify-center">
-            <i class="fas fa-plus mr-3"></i> New Report
+            <i class="fas fa-plus mr-3"></i> <a href="forms">New Report</a>
         </button>
     </div>
     <nav class="text-white text-base font-semibold pt-3">
-        <!--            <a href="index.html" class="flex items-center text-white opacity-75 hover:opacity-100 py-4 pl-6 nav-item">-->
-        <!--                <i class="fas fa-tachometer-alt mr-3"></i>-->
-        <!--                Dashboard-->
-        <!--            </a>-->
-        <!--            <a href="blank.html" class="flex items-center text-white opacity-75 hover:opacity-100 py-4 pl-6 nav-item">-->
-        <!--                <i class="fas fa-sticky-note mr-3"></i>-->
-        <!--                Blank Page-->
-        <!--            </a>-->
-        <a href="tables" class="flex items-center active-nav-link text-white py-4 pl-6 nav-item">
+        <a href="tables" class="flex items-center text-white opacity-75 hover:opacity-100 py-4 pl-6 nav-item">
             <i class="fas fa-table mr-3"></i>
             포즈 전체 보기
         </a>
@@ -66,14 +58,14 @@
             <i class="fas fa-align-left mr-3"></i>
             포즈 등록 하기
         </a>
-        <!--            <a href="tabs.html" class="flex items-center text-white opacity-75 hover:opacity-100 py-4 pl-6 nav-item">-->
-        <!--                <i class="fas fa-tablet-alt mr-3"></i>-->
-        <!--                Tabbed Content-->
-        <!--            </a>-->
-        <!--            <a href="calendar.html" class="flex items-center text-white opacity-75 hover:opacity-100 py-4 pl-6 nav-item">-->
-        <!--                <i class="fas fa-calendar mr-3"></i>-->
-        <!--                Calendar-->
-        <!--            </a>-->
+        <a href="talks" class="flex items-center text-white opacity-75 hover:opacity-100 py-4 pl-6 nav-item">
+            <i class="fas fa-align-left mr-3"></i>
+            포즈톡
+        </a>
+        <a href="#" class="flex items-center text-white opacity-75 hover:opacity-100 py-4 pl-6 nav-item">
+            <i class="fas fa-align-left mr-3"></i>
+            🛠 포즈태그
+        </a>
     </nav>
 </aside>
 <div class="relative w-full flex flex-col h-screen overflow-y-hidden">
@@ -127,17 +119,44 @@
                 </div>
 
                 <div class="flex items-center justify-between">
-                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-                            type="submit">
-                        수정하기
+                    <button
+                            id="updateBtn"
+                            type="button"
+                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                        수정
+                    </button>
+
+                    <button id="deleteBtn"
+                            type="button"
+                            class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                        삭제
                     </button>
                 </div>
             </form>
+
         </div>
     </div>
 </div>
 
 <script>
+    document.getElementById("deleteBtn").addEventListener("click", function () {
+        const poseId = getParameterByName('poseId');
+
+        fetch(`/api/admin/pose/${poseId}`, {
+            method: 'DELETE',
+        })
+            .then(response => {
+                console.log(response);
+            })
+            .then((data) => {
+                alert("포즈가 정상적으로 삭제되었습니다.");
+                return window.location.href = '/admin/tables';
+            })
+            .catch((error) => {
+                return alert("포즈 삭제에 실패했습니다.");
+            });
+    });
+
     function getParameterByName(name, url = window.location.href) {
         name = name.replace(/[\[\]]/g, '\\$&');
         const regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
@@ -181,16 +200,15 @@
                 'Content-Type': 'application/json'
             }
         }).then(result => {
-            console.log(result);
+            alert("포즈가 정상적으로 수정되었습니다.");
+            window.location.href = `/admin/details?poseId=${getParameterByName('poseId')}`;
         })
-        .catch(error => {
-            console.error('Error:', error);
-        });
+            .catch(error => {
+                alert("포즈 수정에 실패했습니다.");
+            });
     }
 
-    document.getElementById("poseForm").addEventListener("submit", function (event) {
-        event.preventDefault();
-
+    document.getElementById("updateBtn").addEventListener("click", function () {
         const poseId = getParameterByName('poseId');
         const url = `/api/admin/pose/${poseId}`;
         const data = {};

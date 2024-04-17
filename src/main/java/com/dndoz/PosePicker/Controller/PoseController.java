@@ -53,7 +53,7 @@ public class PoseController {
 	@ResponseStatus(HttpStatus.OK)
 	@GetMapping("/{pose_id}")
 	@ApiResponses({@ApiResponse(code = 200, message = "포즈 사진 상세 조회 성공"),
-		@ApiResponse(code = 401, message = "접근 권한이 없습니다.")})
+	@ApiResponse(code = 401, message = "접근 권한이 없습니다.")})
 	@ApiOperation(value = "포즈 사진 상세 조회", notes = "사진 클릭 시 포즈 상세 정보")
 	public ResponseEntity<PoseInfoResponse> getPoseInfo(
 		@RequestHeader(value = "Authorization", required = false) String accessToken, @PathVariable Long pose_id) throws
@@ -75,10 +75,10 @@ public class PoseController {
 	 * @throws IOException
 	 */
 	@ResponseStatus(HttpStatus.CREATED)
-	@ApiResponse(code = 201, message = "포즈 데이터 업로드 완료")
+	@ApiResponse(code = 200, response = PoseInfoResponse.class, message = "포즈 데이터 업로드 성공")
 	@ApiOperation(value = "포즈 데이터 업로드", notes = "포즈 사진 업로드")
-	@PostMapping("/")
-	public ResponseEntity<?> uploadData(
+	@PostMapping()
+	public ResponseEntity<PoseInfoResponse> uploadPose(
 		@RequestHeader(value= "Authorization", required=false) String accessToken,
 		@RequestPart(value = "peopleCount") String peopleCount,
 		@RequestPart(value = "frameCount") String frameCount,
@@ -89,8 +89,7 @@ public class PoseController {
 		@RequestPart(value = "file") MultipartFile multipartFile) throws IOException, IllegalAccessException {
 		PoseUploadRequest poseUploadRequest = new PoseUploadRequest(peopleCount, frameCount, tags, source, sourceUrl,
 			description);
-		poseService.uploadPose(accessToken, poseUploadRequest, multipartFile);
-		return ResponseEntity.status(HttpStatus.CREATED).build();
+		return ResponseEntity.ok(poseService.uploadPose(accessToken, poseUploadRequest, multipartFile));
 	}
 
 	/**
@@ -142,9 +141,12 @@ public class PoseController {
 	@ApiOperation(value = "포즈 피드", notes = "전체 포즈 피드 정보를 제공합니다.")
 	public ResponseEntity<?> getPoses(
 		@RequestHeader(value = "Authorization", required = false) String accessToken,
-		@RequestParam final Integer pageNumber, @RequestParam final Integer pageSize) throws IllegalAccessException {
-		logger.info("[getPoses] 포즈 태그 속성 정보 요청");
-		Slice<PoseInfoResponse> poses = poseService.findPoses(accessToken, pageNumber, pageSize);
+		@RequestParam final Integer pageNumber,
+		@RequestParam final Integer pageSize,
+		@RequestParam(value="sort", required = false) final String sort
+		) throws IllegalAccessException {
+		logger.info("[getPoses] 전체 포즈 정보 요청");
+		Slice<PoseInfoResponse> poses = poseService.findPoses(accessToken, pageNumber, pageSize, sort);
 		return ResponseEntity.ok(poses);
 	}
 
@@ -171,6 +173,16 @@ public class PoseController {
 
 		return ResponseEntity.ok(
 			poseService.getPoseFeed(accessToken, new PoseFeedRequest(pageNumber, peopleCount, frameCount, tags)));
+	}
+
+	@GetMapping("/user")
+	@ApiOperation(value = "사용자 업로드한 포즈 이미지 조회", notes = "사용자가 업로드한 모든 포즈 이미지를 페이징하여 반환합니다.")
+	public ResponseEntity<?> getUserPoses(
+		@RequestHeader(value = "Authorization", required = false) String accessToken,
+		@RequestParam final Integer pageNumber, @RequestParam final Integer pageSize) throws IllegalAccessException {
+		logger.info("[getUserPoses] 사용자가 업로드한 포즈 이미지 조회 요청");
+		Slice<PoseInfoResponse> poses = poseService.findUserUploadedPoses(accessToken, pageNumber, pageSize);
+		return ResponseEntity.ok(poses);
 	}
 }
 

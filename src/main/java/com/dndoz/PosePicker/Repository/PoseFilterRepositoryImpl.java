@@ -64,10 +64,15 @@ public class PoseFilterRepositoryImpl implements PoseFilterRepositoryCustom {
 		PoseInfo randomPoseInfo = queryFactory
 			.selectFrom(qPoseInfo)
 			.where(
-				eqPeopleCount(qPoseInfo, people_count)
+				eqPeopleCount(qPoseInfo, people_count),
+				eqShow(qPoseInfo)
 			)
 			.orderBy(Expressions.numberTemplate(Double.class, "function('rand')").asc())
 			.fetchFirst();	//랜덤 첫번째 결과-> fetchFirst
+
+		if (randomPoseInfo == null) {
+			return Optional.ofNullable(new PoseInfo());
+		}
 
 		List<String> attributes = queryFactory.select(qPoseTagAttribute.attribute)
 			.from(qPoseTag)
@@ -93,7 +98,8 @@ public class PoseFilterRepositoryImpl implements PoseFilterRepositoryCustom {
 			.selectFrom(qPoseInfo)
 			.where(
 				eqPeopleCount(qPoseInfo, people_count),
-				eqFrameCount(qPoseInfo, frame_count)
+				eqFrameCount(qPoseInfo, frame_count),
+				eqShow(qPoseInfo)
 			)
 			.orderBy(Expressions.numberTemplate(Double.class, "function('rand')").asc())
 			.fetch();
@@ -151,7 +157,8 @@ public class PoseFilterRepositoryImpl implements PoseFilterRepositoryCustom {
 			.on(qBookmark.poseInfo.poseId.eq(qPoseInfo.poseId).and(qBookmark.user.uid.eq(userId)))
 			.where(
 				eqPeopleCount(qPoseInfo, people_count),
-				eqFrameCount(qPoseInfo, frame_count)
+				eqFrameCount(qPoseInfo, frame_count),
+				eqShow(qPoseInfo)
 			)
 			.groupBy(qPoseInfo.poseId)
 			.orderBy(new OrderSpecifier<>(Order.ASC, Expressions.numberTemplate(Double.class, "rand()")))
@@ -206,7 +213,8 @@ public class PoseFilterRepositoryImpl implements PoseFilterRepositoryCustom {
 			.on(qBookmark.poseInfo.poseId.eq(qPoseInfo.poseId).and(qBookmark.user.uid.eq(userId)))
 			.where(
 				eqPeopleCount(qPoseInfo, people_count),
-				eqFrameCount(qPoseInfo, frame_count)
+				eqFrameCount(qPoseInfo, frame_count),
+				eqShow(qPoseInfo)
 			)
 			.groupBy(qPoseInfo.poseId)
 			.orderBy(new OrderSpecifier<>(Order.ASC, Expressions.numberTemplate(Double.class, "rand()")))
@@ -252,6 +260,7 @@ public class PoseFilterRepositoryImpl implements PoseFilterRepositoryCustom {
 			.from(qPoseInfo)
 			.leftJoin(qBookmark)
 			.on(qBookmark.poseInfo.poseId.eq(qPoseInfo.poseId).and(qBookmark.user.uid.eq(userId)))
+			.where(eqShow(qPoseInfo))
 			.groupBy(qPoseInfo.poseId)
 			.orderBy(new OrderSpecifier<>(Order.ASC, Expressions.numberTemplate(Double.class, "rand()")))
 			.fetch();
@@ -295,6 +304,10 @@ public class PoseFilterRepositoryImpl implements PoseFilterRepositoryCustom {
 			return null;
 		}
 		return qPoseTagAttribute.attribute.in(tags.split(","));
+	}
+
+	private BooleanExpression eqShow(QPoseInfo qPoseInfo) {
+		return qPoseInfo.show.eq(false);
 	}
 }
 

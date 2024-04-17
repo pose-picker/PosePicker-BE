@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,6 +34,7 @@ public class AdminController {
 		this.adminService = adminService;
 	}
 
+	// 포즈 등록 API
 	@PostMapping("/pose")
 	public ResponseEntity<?> uploadData(
 		@RequestPart(value = "peopleCount") String peopleCount,
@@ -60,5 +62,11 @@ public class AdminController {
 	@GetMapping("/pose/talk")
 	public ResponseEntity<List<PoseTalkResponse>> getPoseTalk() throws IOException {
 		return ResponseEntity.ok(adminService.getPoseTalk());
+	}
+
+	@DeleteMapping("/pose/{poseId}")
+	public ResponseEntity<?> deletePose(@PathVariable Long poseId) {
+		adminService.deletePose(poseId);
+		return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
 	}
 }

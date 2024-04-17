@@ -44,5 +44,13 @@ public class PoseTag extends BaseEntity {
 	public PoseInfo getPoseInfo() {
 		return poseInfo;
 	}
+
+	public void setPoseInfo(PoseInfo poseInfo) {
+		this.poseInfo = poseInfo;
+	}
+
+	public void setPoseTagAttribute(PoseTagAttribute poseTagAttribute) {
+		this.poseTagAttribute = poseTagAttribute;
+	}
 }
 
