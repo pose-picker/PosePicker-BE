@@ -207,12 +207,6 @@ public class PoseService {
 			Long userId = Long.valueOf(jwtTokenProvider.extractUid(token));
 			setBookmarkStatusForPoses(userId);
 		}
-
-		System.out.println(
-			"DEBUG: " + pageable.getPageNumber() + ", " + pageable.getPageSize() + ", " + pageable.getSort()
-				.toString());
-		System.out.println(pageable.getSort().toString());
-
 		return poseInfoRepository.findPoses(pageable).map(poseInfo -> new PoseInfoResponse(urlPrefix, poseInfo));
 	}
 
