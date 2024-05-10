@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.dndoz.PosePicker.Dto.MyPoseResponse;
 import com.dndoz.PosePicker.Dto.PoseFeedRequest;
 import com.dndoz.PosePicker.Dto.PoseFeedResponse;
 import com.dndoz.PosePicker.Dto.PoseInfoResponse;
@@ -183,6 +184,20 @@ public class PoseController {
 		logger.info("[getUserPoses] 사용자가 업로드한 포즈 이미지 조회 요청");
 		Slice<PoseInfoResponse> poses = poseService.findUserUploadedPoses(accessToken, pageNumber, pageSize);
 		return ResponseEntity.ok(poses);
+	}
+
+	/**
+	 * @Description 마이포즈 (업로드, 저장 개수) 조회
+	 * @return
+	 */
+	@ResponseStatus(HttpStatus.OK)
+	@GetMapping("/mypose")
+	@ApiResponse(code = 200, message = "마이포즈 조회 ")
+	@ApiOperation(value = "마이포즈 (업로드, 저장 개수) 조회", notes = "마이포즈 조회 성공")
+	public ResponseEntity<MyPoseResponse> myPoseCount(
+		@RequestHeader(value= "Authorization", required=false) String accessToken) throws IllegalAccessException {
+		logger.info("[myPoseCount] 마이포즈 업로드&저장 개수 조회 요청");
+		return ResponseEntity.ok(poseService.myPoseCount(accessToken));
 	}
 }
 

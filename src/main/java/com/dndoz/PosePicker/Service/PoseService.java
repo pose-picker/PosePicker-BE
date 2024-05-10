@@ -1,6 +1,7 @@
 package com.dndoz.PosePicker.Service;
 
 import com.dndoz.PosePicker.Domain.PoseTag;
+import com.dndoz.PosePicker.Dto.MyPoseResponse;
 import com.dndoz.PosePicker.Repository.PoseTagRepository;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -19,8 +20,13 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.SliceImpl;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -42,6 +48,9 @@ import com.dndoz.PosePicker.Repository.PoseInfoRepository;
 import com.dndoz.PosePicker.Repository.PoseTagAttributeRepository;
 import com.dndoz.PosePicker.Repository.PoseTalkRepository;
 import com.dndoz.PosePicker.Repository.UserRepository;
+
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
 
 @Transactional(readOnly = true)
 @Service
@@ -301,4 +310,19 @@ public class PoseService {
 		return null;
 	}
 
+	public MyPoseResponse myPoseCount(String accessToken) throws IllegalAccessException {
+		String token=jwtTokenProvider.extractJwtToken(accessToken);
+		if (! jwtTokenProvider.validateToken(token)) {
+			return null;
+		}
+		Long userId= Long.valueOf(jwtTokenProvider.extractUid(token));
+
+		Long uploadCount=poseInfoRepository.findByUpLoadCountByUserId(userId);
+		Long bookmarkCount=bookmarkRepository.findByBookmarkCountByUserId(userId);
+
+		logger.info("[My Pose] 업로드 개수: " + uploadCount);
+		logger.info("[My Pose] 북마크 개수: " + bookmarkCount);
+
+		return new MyPoseResponse(uploadCount, bookmarkCount);
+	}
 }

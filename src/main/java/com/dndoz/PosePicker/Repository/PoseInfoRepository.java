@@ -91,4 +91,8 @@ public interface PoseInfoRepository extends JpaRepository<PoseInfo, Long> {
 		"SELECT p.* FROM pose_info p WHERE p.uid = :uid", nativeQuery = true)
 	Slice<PoseInfo> findByUId(@Param("uid") Long uid, Pageable pageable);
 
+	//마이포즈 포즈 업로드 저장 개수 확인
+	@Query(value= "SELECT COUNT(*) FROM pose_info p WHERE p.uid = :userId", nativeQuery = true)
+	Long findByUpLoadCountByUserId(@Param("userId") Long userId);
+
 }
