@@ -191,7 +191,7 @@ public class PoseController {
 	 * @return
 	 */
 	@ResponseStatus(HttpStatus.OK)
-	@GetMapping("/mypose")
+	@GetMapping("/user/mypose")
 	@ApiResponse(code = 200, message = "마이포즈 조회 ")
 	@ApiOperation(value = "마이포즈 (업로드, 저장 개수) 조회", notes = "마이포즈 조회 성공")
 	public ResponseEntity<MyPoseResponse> myPoseCount(
