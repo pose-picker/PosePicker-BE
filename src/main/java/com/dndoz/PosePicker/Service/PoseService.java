@@ -118,7 +118,7 @@ public class PoseService {
 			return null;
 		}
 		Long userId = Long.valueOf(jwtTokenProvider.extractUid(token));
-		User user = userRepository.findById(userId).orElseThrow(NullPointerException::new);
+		//User user = userRepository.findById(userId).orElseThrow(NullPointerException::new);
 
 		if (!multipartFile.isEmpty()) {
 			ObjectMetadata metadata = new ObjectMetadata();
@@ -136,7 +136,7 @@ public class PoseService {
 			poseInfo.setSourceUrl(poseDto.getSourceUrl());
 			poseInfo.setSource(poseDto.getSource());
 			poseInfo.setImageKey(imageKey);
-			poseInfo.setUser(user);
+			poseInfo.setUser(userId);
 			poseInfo.setShow(false);
 
 			PoseInfo savedPoseInfo = poseInfoRepository.save(poseInfo);
@@ -309,6 +309,7 @@ public class PoseService {
 
 		return null;
 	}
+<<<<<<< feat/mypose
 
 	public MyPoseResponse myPoseCount(String accessToken) throws IllegalAccessException {
 		String token=jwtTokenProvider.extractJwtToken(accessToken);
@@ -325,4 +326,6 @@ public class PoseService {
 
 		return new MyPoseResponse(uploadCount, bookmarkCount);
 	}
+=======
+>>>>>>> develop
 }
