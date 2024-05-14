@@ -19,6 +19,10 @@ public interface BookmarkRepository extends JpaRepository<Bookmark,Long> {
 	@Query(value="SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END as bookmarkCheck FROM bookmark b WHERE b.uid = :userId AND b.pose_id = :poseId", nativeQuery = true)
 	BigInteger existsByUserIdAndPoseId(@Param("userId") Long userId, @Param("poseId") Long poseId);
 
+	// //마이포즈 북마크 저장 개수 확인
+	@Query(value="SELECT COUNT(*) FROM bookmark b WHERE b.uid = :userId", nativeQuery = true)
+	Long findByBookmarkCountByUserId(@Param("userId") Long userId);
+
 	//북마크 삭제
 	void deleteByUserAndPoseInfo(User user, PoseInfo poseInfo);
 
