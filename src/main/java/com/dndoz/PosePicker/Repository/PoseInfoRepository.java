@@ -88,8 +88,9 @@ public interface PoseInfoRepository extends JpaRepository<PoseInfo, Long> {
 	Slice<PoseInfo> findBookmark(@Param("uid") Long uid, Pageable pageable);
 
 	@Query(value =
-		"SELECT p.* FROM pose_info p WHERE p.uid = :uid", nativeQuery = true)
-	Slice<PoseInfo> findByUId(@Param("uid") Long uid, Pageable pageable);
+		"SELECT p.*, CASE WHEN b.pose_id IS NOT NULL THEN TRUE ELSE FALSE END AS bookmarkCheck " +
+		"FROM pose_info p LEFT JOIN bookmark b ON p.pose_id = b.pose_id AND b.uid = :uid WHERE  p.uid = :uid ", nativeQuery = true)
+	Slice<PoseInfo> findByUId(Pageable pageable, @Param("uid") Long uid);
 
 	//마이포즈 포즈 업로드 저장 개수 확인
 	@Query(value= "SELECT COUNT(*) FROM pose_info p WHERE p.uid = :userId", nativeQuery = true)

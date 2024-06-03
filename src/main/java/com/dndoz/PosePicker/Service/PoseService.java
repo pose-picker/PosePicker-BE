@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
@@ -72,6 +73,8 @@ public class PoseService {
 
 	private List<PoseInfo> filteredPoseInfo;
 	private List<PoseInfo> recommendedPoseInfo;
+	private List<PoseInfo> upLoadPoseInfo;
+
 	@Value("${cloud.aws.s3.bucketName}")
 	private String bucketName;
 
@@ -304,7 +307,19 @@ public class PoseService {
 				return null;
 			}
 			Long uid = Long.valueOf(jwtTokenProvider.extractUid(token));
-			return poseInfoRepository.findByUId(uid, pageable).map(poseInfo -> new PoseInfoResponse(urlPrefix, poseInfo));
+
+			upLoadPoseInfo = poseFilterRepository.findByUId(pageable, uid);
+			boolean hasNext = false;
+			if (upLoadPoseInfo.size() > pageSize) {
+				upLoadPoseInfo.remove(upLoadPoseInfo.size() - 1);
+				hasNext = true;
+			}
+
+			List<PoseInfoResponse> poseInfoResponses = upLoadPoseInfo.stream()
+				.map(poseInfo -> new PoseInfoResponse(urlPrefix, poseInfo))
+				.collect(Collectors.toList());
+
+			return new SliceImpl<>(poseInfoResponses, pageable, hasNext);
 		}
 
 		return null;

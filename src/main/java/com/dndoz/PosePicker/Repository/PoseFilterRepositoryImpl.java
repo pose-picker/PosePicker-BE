@@ -39,7 +39,7 @@ public class PoseFilterRepositoryImpl implements PoseFilterRepositoryCustom {
 			.leftJoin(qPoseTagAttribute).on(qPoseTag.poseTagAttribute.attributeId.eq(qPoseTagAttribute.attributeId))
 			.where(qPoseInfo.poseId.eq(pose_id))
 			.groupBy(qPoseInfo.poseId)
-			.fetchOne();	//poseId 고유한 결과-> fetchOne
+			.fetchOne();    //poseId 고유한 결과-> fetchOne
 
 		List<String> attributes = queryFactory.select(qPoseTagAttribute.attribute)
 			.from(qPoseTag)
@@ -68,7 +68,7 @@ public class PoseFilterRepositoryImpl implements PoseFilterRepositoryCustom {
 				eqShow(qPoseInfo)
 			)
 			.orderBy(Expressions.numberTemplate(Double.class, "function('rand')").asc())
-			.fetchFirst();	//랜덤 첫번째 결과-> fetchFirst
+			.fetchFirst();    //랜덤 첫번째 결과-> fetchFirst
 
 		if (randomPoseInfo == null) {
 			return Optional.ofNullable(new PoseInfo());
@@ -104,9 +104,9 @@ public class PoseFilterRepositoryImpl implements PoseFilterRepositoryCustom {
 			.orderBy(Expressions.numberTemplate(Double.class, "function('rand')").asc())
 			.fetch();
 
-		if (null==tags) {
+		if (null == tags) {
 			return false;
-		}else{
+		} else {
 			List<String> tagsCondition = Arrays.asList(tags.split(","));
 			List<PoseInfo> result = new ArrayList<>();
 			for (PoseInfo pi : poseInfoList) {
@@ -133,11 +133,12 @@ public class PoseFilterRepositoryImpl implements PoseFilterRepositoryCustom {
 	}
 
 	@Override
-	public List<PoseInfo> findByFilter(Pageable pageable, Long people_count, Long frame_count, String tags, Long userId) {
+	public List<PoseInfo> findByFilter(Pageable pageable, Long people_count, Long frame_count, String tags,
+		Long userId) {
 		QPoseInfo qPoseInfo = QPoseInfo.poseInfo;
 		QPoseTag qPoseTag = QPoseTag.poseTag;
 		QPoseTagAttribute qPoseTagAttribute = QPoseTagAttribute.poseTagAttribute;
-		QBookmark qBookmark= QBookmark.bookmark;
+		QBookmark qBookmark = QBookmark.bookmark;
 
 		List<Tuple> poseInfoList = queryFactory
 			.select(
@@ -194,7 +195,7 @@ public class PoseFilterRepositoryImpl implements PoseFilterRepositoryCustom {
 		QPoseInfo qPoseInfo = QPoseInfo.poseInfo;
 		QPoseTag qPoseTag = QPoseTag.poseTag;
 		QPoseTagAttribute qPoseTagAttribute = QPoseTagAttribute.poseTagAttribute;
-		QBookmark qBookmark= QBookmark.bookmark;
+		QBookmark qBookmark = QBookmark.bookmark;
 
 		List<Tuple> poseInfoList = queryFactory
 			.select(
@@ -245,14 +246,16 @@ public class PoseFilterRepositoryImpl implements PoseFilterRepositoryCustom {
 		QPoseInfo qPoseInfo = QPoseInfo.poseInfo;
 		QPoseTag qPoseTag = QPoseTag.poseTag;
 		QPoseTagAttribute qPoseTagAttribute = QPoseTagAttribute.poseTagAttribute;
-		QBookmark qBookmark= QBookmark.bookmark;
+		QBookmark qBookmark = QBookmark.bookmark;
 
 		List<Tuple> recommendedContents = queryFactory
 			.select(
 				qPoseInfo,
 				Expressions.cases()
 					.when(
-						qBookmark.user.uid.eq(userId).and(qBookmark.poseInfo.poseId.eq(qPoseInfo.poseId)).and(qBookmark.user.uid.ne(0L))
+						qBookmark.user.uid.eq(userId)
+							.and(qBookmark.poseInfo.poseId.eq(qPoseInfo.poseId))
+							.and(qBookmark.user.uid.ne(0L))
 					)
 					.then(Expressions.constant(Boolean.TRUE))
 					.otherwise(Expressions.constant(Boolean.FALSE))
@@ -282,6 +285,36 @@ public class PoseFilterRepositoryImpl implements PoseFilterRepositoryCustom {
 			result.add(poseInfo);
 		}
 
+		return result;
+	}
+
+	@Override
+	public List<PoseInfo> findByUId(Pageable pageable, Long userId) {
+		QPoseInfo qPoseInfo = QPoseInfo.poseInfo;
+		QBookmark qBookmark = QBookmark.bookmark;
+
+		List<Tuple> poseInfoList = queryFactory
+			.select(
+				qPoseInfo,
+				Expressions.cases()
+					.when(qBookmark.user.uid.isNotNull())
+					.then(Boolean.TRUE)
+					.otherwise(Boolean.FALSE)
+					.as("bookmarkCheck")
+			)
+			.from(qPoseInfo)
+			.leftJoin(qBookmark).on(qPoseInfo.poseId.eq(qBookmark.poseInfo.poseId).and(qBookmark.user.uid.eq(userId)))
+			.where(qPoseInfo.user.uid.eq(userId))
+			.orderBy(qPoseInfo.updatedAt.desc())
+			.fetch();
+
+		List<PoseInfo> result = new ArrayList<>();
+		for (Tuple tuple : poseInfoList) {
+			PoseInfo pi = tuple.get(qPoseInfo);
+			boolean bookmarkCheck = tuple.get(1, Boolean.class);
+			PoseInfo poseInfo = new PoseInfo(pi, null, bookmarkCheck);
+			result.add(poseInfo);
+		}
 		return result;
 	}
 
