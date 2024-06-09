@@ -20,4 +20,6 @@ public interface PoseFilterRepositoryCustom {
 
 	List<PoseInfo> getRecommendedContents(Pageable pageable, Long userId);
 
+	List<PoseInfo> findByUId(Pageable pageable, Long userId);
+
 }
