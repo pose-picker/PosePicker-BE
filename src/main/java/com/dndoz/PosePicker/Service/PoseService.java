@@ -3,6 +3,7 @@ package com.dndoz.PosePicker.Service;
 import com.dndoz.PosePicker.Domain.PoseTag;
 import com.dndoz.PosePicker.Dto.MyPoseResponse;
 import com.dndoz.PosePicker.Repository.PoseTagRepository;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.time.LocalDate;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.imageio.ImageIO;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,6 +133,10 @@ public class PoseService {
 			String imageKey = DigestUtils.sha256Hex(userId + LocalDate.now().toString() + System.currentTimeMillis()) + ".jpg";
 			amazonS3.putObject(bucketName, imageKey, multipartFile.getInputStream(), metadata);
 
+			BufferedImage image = ImageIO.read(multipartFile.getInputStream());
+			int width = image.getWidth();
+			int height = image.getHeight();
+
 			PoseInfo poseInfo = new PoseInfo();
 			String poseIdHash = String.valueOf(userId.hashCode() & Integer.MAX_VALUE); // Create a hash of the userId
 			poseInfo.setPoseId(Long.parseLong(poseIdHash));
@@ -141,6 +147,8 @@ public class PoseService {
 			poseInfo.setImageKey(imageKey);
 			poseInfo.setUser(userId);
 			poseInfo.setShow(false);
+			poseInfo.setWidth(width);
+			poseInfo.setHeight(height);
 
 			PoseInfo savedPoseInfo = poseInfoRepository.save(poseInfo);
 
@@ -324,8 +332,6 @@ public class PoseService {
 
 		return null;
 	}
-<<<<<<< feat/mypose
-
 	public MyPoseResponse myPoseCount(String accessToken) throws IllegalAccessException {
 		String token=jwtTokenProvider.extractJwtToken(accessToken);
 		if (! jwtTokenProvider.validateToken(token)) {
@@ -341,6 +347,4 @@ public class PoseService {
 
 		return new MyPoseResponse(uploadCount, bookmarkCount);
 	}
-=======
->>>>>>> develop
 }

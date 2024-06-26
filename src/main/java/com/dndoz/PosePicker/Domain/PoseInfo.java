@@ -46,7 +46,7 @@ public class PoseInfo extends BaseEntity {
 	@Column(name = "uid")
 	private Long user;
 
-	@Column(name = "`show`" )
+	@Column(name = "`show`")
 	private Boolean show;
 
 	@Transient
@@ -54,6 +54,12 @@ public class PoseInfo extends BaseEntity {
 
 	@Transient
 	private boolean bookmarkCheck; //북마크 여부
+
+	@Column(name = "width")
+	private Integer width;
+
+	@Column(name = "height")
+	private Integer height;
 
 	public PoseInfo(PoseInfo poseInfo, String tagAttributes) {
 		this.poseId = poseInfo.getPoseId();
@@ -66,6 +72,8 @@ public class PoseInfo extends BaseEntity {
 		this.user = poseInfo.getUser();
 		this.show = poseInfo.getShow();
 		this.tagAttributes = tagAttributes;
+		this.width = poseInfo.getWidth();
+		this.height = poseInfo.getHeight();
 	}
 
 	//포즈피드 필터링 시 북마크 여부 포함한 PoseInfo
@@ -80,7 +88,9 @@ public class PoseInfo extends BaseEntity {
 		this.user = poseInfo.getUser();
 		this.show = poseInfo.getShow();
 		this.tagAttributes = tagAttributes;
-		this.bookmarkCheck=bookmarkCheck;
+		this.bookmarkCheck = bookmarkCheck;
+		this.width = poseInfo.getWidth();
+		this.height = poseInfo.getHeight();
 	}
 
 	public PoseInfo() {
@@ -133,6 +143,22 @@ public class PoseInfo extends BaseEntity {
 
 	public void setBookmarkCheck(boolean bookmarkCheck) {
 		this.bookmarkCheck = bookmarkCheck;
+	}
+
+	public Long getUser() {
+		return user;
+	}
+
+	public void setUser(Long user) {
+		this.user = user;
+	}
+
+	public int getWidth() {
+		return width;
+	}
+
+	public void setWidth(int width) {
+		this.width = width;
 	}
 
 }

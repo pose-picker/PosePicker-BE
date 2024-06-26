@@ -304,7 +304,7 @@ public class PoseFilterRepositoryImpl implements PoseFilterRepositoryCustom {
 			)
 			.from(qPoseInfo)
 			.leftJoin(qBookmark).on(qPoseInfo.poseId.eq(qBookmark.poseInfo.poseId).and(qBookmark.user.uid.eq(userId)))
-			.where(qPoseInfo.user.uid.eq(userId))
+			.where(qPoseInfo.user.eq(userId))
 			.orderBy(qPoseInfo.updatedAt.desc())
 			.fetch();
 
