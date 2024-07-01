@@ -16,6 +16,7 @@ import com.dndoz.PosePicker.Dto.PPTokenResponse;
 import com.dndoz.PosePicker.Global.status.StatusCode;
 import com.dndoz.PosePicker.Global.status.StatusResponse;
 import com.dndoz.PosePicker.Repository.BookmarkRepository;
+import com.dndoz.PosePicker.Repository.PoseInfoRepository;
 import com.dndoz.PosePicker.Repository.UserRepository;
 
 import com.dndoz.PosePicker.Repository.WithdrawalRepository;
@@ -54,6 +55,7 @@ public class KakaoService {
 	private final RedisTemplate<String, String> redisTemplate;
 	private final BookmarkRepository bookmarkRepository;
 	private final WithdrawalRepository withdrawalRepository;
+	private final PoseInfoRepository poseInfoRepository;
 
 	/** [1] ios 버전 카카오 로그인 **/
 	//포즈피커 자체 토큰 생성 후 전달
@@ -272,8 +274,14 @@ public class KakaoService {
 			redisTemplate.delete("refresh:"+refreshToken);
 		}
 
-		//북마크 정보 삭제, 탈퇴 사유 저장, 회원 정보 삭제
+		//북마크 정보 삭제, 포즈 사용자 변경, 탈퇴 사유 저장, 회원 정보 삭제
 		bookmarkRepository.deleteByUser(user);
+
+		//탈퇴하려는 사용자 포즈 admin 계정으로 업데이트
+		User adminUser= userRepository.findByEmail("dnd.9th.oz@gmail.com").orElseThrow(NullPointerException::new);
+		poseInfoRepository.updateUser(adminUser.getUid(), user.getUid());
+
+		//회원 정보 삭제
 		userRepository.delete(user);
 
 		//탈퇴사유 저장
