@@ -77,7 +77,7 @@ public class AdminService {
 			poseInfo.setSourceUrl(poseDto.getSourceUrl());
 			poseInfo.setSource(poseDto.getSource());
 			poseInfo.setImageKey(imageKey);
-			poseInfo.setUser(user);
+			poseInfo.setUser(userId);
 
 			PoseInfo savedPoseInfo = poseInfoRepository.save(poseInfo);
 
