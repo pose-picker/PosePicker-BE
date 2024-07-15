@@ -6,7 +6,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 public enum StatusCode {
 
         OK(200, "OK"),
-        NO_CONTENT(204, "No Content");
+		Forbidden(403, "Forbidden");
+        //NO_CONTENT(204, "No Content");
 //        SEE_OTHER(303, "See Other"); // redirect
 
 
