@@ -49,6 +49,9 @@ public class PoseInfo extends BaseEntity {
 	@Column(name = "`show`" )
 	private Boolean show;
 
+	@Column(name = "`report`" )
+	private Boolean report;
+
 	@Transient
 	private String tagAttributes;
 
@@ -65,6 +68,7 @@ public class PoseInfo extends BaseEntity {
 		this.frameCount = poseInfo.getFrameCount();
 		this.user = poseInfo.getUser();
 		this.show = poseInfo.getShow();
+		this.report = poseInfo.getReport();
 		this.tagAttributes = tagAttributes;
 	}
 
@@ -79,6 +83,7 @@ public class PoseInfo extends BaseEntity {
 		this.frameCount = poseInfo.getFrameCount();
 		this.user = poseInfo.getUser();
 		this.show = poseInfo.getShow();
+		this.report = poseInfo.getReport();
 		this.tagAttributes = tagAttributes;
 		this.bookmarkCheck=bookmarkCheck;
 	}

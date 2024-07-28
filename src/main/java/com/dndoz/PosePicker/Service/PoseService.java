@@ -1,7 +1,11 @@
 package com.dndoz.PosePicker.Service;
 
+import com.dndoz.PosePicker.Domain.PoseReport;
 import com.dndoz.PosePicker.Domain.PoseTag;
 import com.dndoz.PosePicker.Dto.MyPoseResponse;
+import com.dndoz.PosePicker.Global.status.StatusCode;
+import com.dndoz.PosePicker.Global.status.StatusResponse;
+import com.dndoz.PosePicker.Repository.PoseReportRepository;
 import com.dndoz.PosePicker.Repository.PoseTagRepository;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -67,6 +71,7 @@ public class PoseService {
 	private final PoseTagAttributeRepository poseTagAttributeRepository;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final BookmarkRepository bookmarkRepository;
+	private final PoseReportRepository poseReportRepository;
 
 	@Value("${aws.image_url.prefix}")
 	private String urlPrefix;
@@ -85,7 +90,9 @@ public class PoseService {
 					   final PoseFilterRepository poseFilterRepository,
 					   final PoseTagRepository poseTagRepository,
 					   final PoseTagAttributeRepository poseTagAttributeRepository,
-					   final JwtTokenProvider jwtTokenProvider, final BookmarkRepository bookmarkRepository) {
+					   final JwtTokenProvider jwtTokenProvider,
+		final BookmarkRepository bookmarkRepository, final PoseReportRepository poseReportRepository ) {
+
 		this.amazonS3 = amazonS3;
 		this.userRepository = userRepository;
 		this.poseInfoRepository = poseInfoRepository;
@@ -95,6 +102,7 @@ public class PoseService {
 		this.poseTagAttributeRepository = poseTagAttributeRepository;
 		this.jwtTokenProvider = jwtTokenProvider;
 		this.bookmarkRepository = bookmarkRepository;
+		this.poseReportRepository=poseReportRepository;
 	}
 
 	//포즈 이미지 상세 조회
@@ -324,7 +332,6 @@ public class PoseService {
 
 		return null;
 	}
-<<<<<<< feat/mypose
 
 	public MyPoseResponse myPoseCount(String accessToken) throws IllegalAccessException {
 		String token=jwtTokenProvider.extractJwtToken(accessToken);
@@ -341,6 +348,40 @@ public class PoseService {
 
 		return new MyPoseResponse(uploadCount, bookmarkCount);
 	}
-=======
->>>>>>> develop
+
+	@Transactional
+	public StatusResponse reportPose(String accessToken, Long poseId, String content) throws IllegalAccessException {
+		String token = jwtTokenProvider.extractJwtToken(accessToken);
+		if (!jwtTokenProvider.validateToken(token)) {
+			return null;
+		}
+		Long uid = Long.valueOf(jwtTokenProvider.extractUid(token));
+		// user id와 pose id 존재 여부 확인
+		userRepository.findById(uid).orElseThrow(NullPointerException::new);
+		poseInfoRepository.findByPoseId(poseId).orElseThrow(NullPointerException::new);
+
+		// 1. 특정 pose에 한 사람당 한 번만 신고 가능
+		if (poseReportRepository.existsByUserIdAndPoseId(uid, poseId).isPresent()) {
+			return new StatusResponse(StatusCode.Forbidden,"이미 신고를 완료했습니다.");
+		}
+
+		// 2. 신고 기록 추가
+		PoseReport poseReport = new PoseReport();
+		poseReport.setUid(uid);
+		poseReport.setPoseId(poseId);
+		poseReport.setContent(content);
+		poseReportRepository.save(poseReport);
+
+		// 3. 특정 poseId에 대한 신고 개수 조회
+		int reportCount = poseReportRepository.countByPoseId(poseId);
+
+		logger.info("[Pose Report] 신고하기 poseId 개수: " + reportCount);
+
+		// 4. 신고 개수가 3개 이상인 경우 poseInfo 테이블의 report 속성을 1로 변경
+		if (reportCount >= 3) {
+			poseInfoRepository.updateReportStatus(poseId);
+		}
+		return new StatusResponse(StatusCode.OK,"신고 완료");
+	}
+
 }

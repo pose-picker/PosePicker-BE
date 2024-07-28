@@ -25,6 +25,7 @@ import com.dndoz.PosePicker.Dto.PoseInfoResponse;
 import com.dndoz.PosePicker.Dto.PoseTagAttributeResponse;
 import com.dndoz.PosePicker.Dto.PoseTalkResponse;
 import com.dndoz.PosePicker.Dto.PoseUploadRequest;
+import com.dndoz.PosePicker.Global.status.StatusResponse;
 import com.dndoz.PosePicker.Service.PoseService;
 
 import io.swagger.annotations.Api;
@@ -198,6 +199,21 @@ public class PoseController {
 		@RequestHeader(value= "Authorization", required=false) String accessToken) throws IllegalAccessException {
 		logger.info("[myPoseCount] 마이포즈 업로드&저장 개수 조회 요청");
 		return ResponseEntity.ok(poseService.myPoseCount(accessToken));
+	}
+
+	/**
+	 * @Description 포즈 신고 하기
+	 * @return
+	 */
+	@ResponseStatus(HttpStatus.OK)
+	@PostMapping("/report")
+	@ApiResponse(code = 200, message = "포즈 신고하기 등록")
+	@ApiOperation(value = "포즈 신고하기", notes = "포즈 신고 성공")
+	public ResponseEntity<StatusResponse> reportPose(
+		@RequestHeader(value= "Authorization", required=false) String accessToken,
+		@RequestParam Long poseId, @RequestParam String content)  throws IllegalAccessException {
+		logger.info("[poseReport] 포즈 신고하기 요청");
+		return ResponseEntity.ok(poseService.reportPose(accessToken, poseId, content));
 	}
 }
 

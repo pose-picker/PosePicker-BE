@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -87,6 +88,11 @@ public interface PoseInfoRepository extends JpaRepository<PoseInfo, Long> {
 			+ "GROUP BY p.pose_id " + "ORDER BY b.updated_at DESC ", nativeQuery = true)
 	Slice<PoseInfo> findBookmark(@Param("uid") Long uid, Pageable pageable);
 
+	@Modifying
+	@Query(value =
+		"UPDATE pose_info p SET p.uid = :adminUid WHERE p.uid = :uid", nativeQuery = true)
+	void updateUser(@Param("adminUid") Long adminUid, @Param("uid") Long uid);
+
 	@Query(value =
 		"UPDATE pose_info p SET p.uid = :adminUid WHERE p.uid = :uid", nativeQuery = true)
 	void updateUser(@Param("adminUid") Long adminUid, @Param("uid") Long uid);
@@ -100,4 +106,8 @@ public interface PoseInfoRepository extends JpaRepository<PoseInfo, Long> {
 	@Query(value= "SELECT COUNT(*) FROM pose_info p WHERE p.uid = :userId", nativeQuery = true)
 	Long findByUpLoadCountByUserId(@Param("userId") Long userId);
 
+	//3번 이상 신고된 포즈 데이터 숨기기
+	@Modifying
+	@Query(value= "UPDATE pose_info p SET p.report = 1 WHERE p.pose_id = :poseId", nativeQuery = true)
+	void updateReportStatus(@Param("poseId") Long poseId);
 }

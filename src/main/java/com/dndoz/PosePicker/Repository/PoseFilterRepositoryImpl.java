@@ -65,7 +65,7 @@ public class PoseFilterRepositoryImpl implements PoseFilterRepositoryCustom {
 			.selectFrom(qPoseInfo)
 			.where(
 				eqPeopleCount(qPoseInfo, people_count),
-				eqShow(qPoseInfo)
+				eqShowAndReport(qPoseInfo)
 			)
 			.orderBy(Expressions.numberTemplate(Double.class, "function('rand')").asc())
 			.fetchFirst();    //랜덤 첫번째 결과-> fetchFirst
@@ -99,7 +99,7 @@ public class PoseFilterRepositoryImpl implements PoseFilterRepositoryCustom {
 			.where(
 				eqPeopleCount(qPoseInfo, people_count),
 				eqFrameCount(qPoseInfo, frame_count),
-				eqShow(qPoseInfo)
+				eqShowAndReport(qPoseInfo)
 			)
 			.orderBy(Expressions.numberTemplate(Double.class, "function('rand')").asc())
 			.fetch();
@@ -159,7 +159,7 @@ public class PoseFilterRepositoryImpl implements PoseFilterRepositoryCustom {
 			.where(
 				eqPeopleCount(qPoseInfo, people_count),
 				eqFrameCount(qPoseInfo, frame_count),
-				eqShow(qPoseInfo)
+				eqShowAndReport(qPoseInfo)
 			)
 			.groupBy(qPoseInfo.poseId)
 			.orderBy(new OrderSpecifier<>(Order.ASC, Expressions.numberTemplate(Double.class, "rand()")))
@@ -215,7 +215,7 @@ public class PoseFilterRepositoryImpl implements PoseFilterRepositoryCustom {
 			.where(
 				eqPeopleCount(qPoseInfo, people_count),
 				eqFrameCount(qPoseInfo, frame_count),
-				eqShow(qPoseInfo)
+				eqShowAndReport(qPoseInfo)
 			)
 			.groupBy(qPoseInfo.poseId)
 			.orderBy(new OrderSpecifier<>(Order.ASC, Expressions.numberTemplate(Double.class, "rand()")))
@@ -263,7 +263,7 @@ public class PoseFilterRepositoryImpl implements PoseFilterRepositoryCustom {
 			.from(qPoseInfo)
 			.leftJoin(qBookmark)
 			.on(qBookmark.poseInfo.poseId.eq(qPoseInfo.poseId).and(qBookmark.user.uid.eq(userId)))
-			.where(eqShow(qPoseInfo))
+			.where(eqShowAndReport(qPoseInfo))
 			.groupBy(qPoseInfo.poseId)
 			.orderBy(new OrderSpecifier<>(Order.ASC, Expressions.numberTemplate(Double.class, "rand()")))
 			.fetch();
@@ -339,8 +339,8 @@ public class PoseFilterRepositoryImpl implements PoseFilterRepositoryCustom {
 		return qPoseTagAttribute.attribute.in(tags.split(","));
 	}
 
-	private BooleanExpression eqShow(QPoseInfo qPoseInfo) {
-		return qPoseInfo.show.eq(false);
+	private BooleanExpression eqShowAndReport(QPoseInfo qPoseInfo) {
+		return qPoseInfo.show.eq(false).and(qPoseInfo.report.eq(false));
 	}
 }
 
