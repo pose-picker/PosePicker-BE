@@ -88,6 +88,10 @@ public interface PoseInfoRepository extends JpaRepository<PoseInfo, Long> {
 	Slice<PoseInfo> findBookmark(@Param("uid") Long uid, Pageable pageable);
 
 	@Query(value =
+		"UPDATE pose_info p SET p.uid = :adminUid WHERE p.uid = :uid", nativeQuery = true)
+	void updateUser(@Param("adminUid") Long adminUid, @Param("uid") Long uid);
+
+	@Query(value =
 		"SELECT p.*, CASE WHEN b.pose_id IS NOT NULL THEN TRUE ELSE FALSE END AS bookmarkCheck " +
 		"FROM pose_info p LEFT JOIN bookmark b ON p.pose_id = b.pose_id AND b.uid = :uid WHERE  p.uid = :uid ", nativeQuery = true)
 	Slice<PoseInfo> findByUId(Pageable pageable, @Param("uid") Long uid);
