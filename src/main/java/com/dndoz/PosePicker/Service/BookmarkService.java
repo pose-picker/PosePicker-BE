@@ -12,6 +12,7 @@ import com.dndoz.PosePicker.Domain.Bookmark;
 import com.dndoz.PosePicker.Domain.PoseInfo;
 import com.dndoz.PosePicker.Domain.User;
 import com.dndoz.PosePicker.Dto.BookmarkResponse;
+import com.dndoz.PosePicker.Dto.IsBookmarkedResponse;
 import com.dndoz.PosePicker.Dto.PoseInfoResponse;
 import com.dndoz.PosePicker.Global.error.exception.BookmarkException;
 import com.dndoz.PosePicker.Repository.BookmarkRepository;
@@ -96,4 +97,20 @@ public class BookmarkService{
 		return poseInfos.map(poseInfo -> new PoseInfoResponse(urlPrefix, poseInfo));
 	}
 
+	public IsBookmarkedResponse isBookmarked(String accessToken, Long poseId) throws IllegalAccessException {
+		String token = jwtTokenProvider.extractJwtToken(accessToken);
+		if (!jwtTokenProvider.validateToken(token)) {
+			return null;
+		}
+		Long userId = Long.valueOf(jwtTokenProvider.extractUid(token));
+		User user = userRepository.findById(userId).orElseThrow(NullPointerException::new);
+		PoseInfo poseInfo = poseInfoRepository.findByPoseId(poseId).orElseThrow(NullPointerException::new);
+
+		//북마크 있으면 북마크 여부 true, 없으면 false로 세팅
+		IsBookmarkedResponse response = new IsBookmarkedResponse();
+		response.setPoseId(poseInfo.getPoseId());
+		response.setBookmarked(bookmarkRepository.findByUserAndPoseInfo(user, poseInfo).isPresent());
+
+		return response;
+	}
 }
