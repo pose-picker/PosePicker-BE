@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.dndoz.PosePicker.Dto.BookmarkResponse;
+import com.dndoz.PosePicker.Dto.IsBookmarkedResponse;
 import com.dndoz.PosePicker.Dto.PoseInfoResponse;
 import com.dndoz.PosePicker.Service.BookmarkService;
 
@@ -50,11 +51,19 @@ public class BookmarkController {
 
 	@GetMapping("/feed")
 	@ApiResponse(code = 200, message = "북마크 리스트 전달 성공")
-	@ApiOperation(value = "포즈 피드", notes = "북마크 리스트 조회")
+	@ApiOperation(value = "북마크 피드", notes = "북마크 리스트 조회")
 	public ResponseEntity<Slice<PoseInfoResponse>> findBookmark(
 		@RequestHeader(value= "Authorization", required=false) String accessToken,
 		@RequestParam final Integer pageNumber, @RequestParam final Integer pageSize) throws Exception {
 		return ResponseEntity.ok(bookmarkService.findBookmark(accessToken, pageNumber, pageSize));
+	}
+
+	@GetMapping("/{poseId}")
+	@ApiResponse(code = 200, message = "해당 포즈에 대한 북마크 여부 조회")
+	@ApiOperation(value = "북마크여부", notes = "북마크 여부 조회")
+	public ResponseEntity<IsBookmarkedResponse> isBookmarked(
+		@RequestHeader(value= "Authorization", required=false) String accessToken, @RequestParam Long poseId) throws Exception {
+		return ResponseEntity.ok(bookmarkService.isBookmarked(accessToken,poseId));
 	}
 
 }
